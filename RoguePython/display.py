@@ -26,10 +26,21 @@ class Display():
 
         self.client_size = (width * self.font_width, height * self.font_height)
 
-        self.buffer_bitmap = wx.Bitmap.FromRGBA(
-            self.client_size[0], 
-            self.client_size[1]
+        # Windows Version
+        buffer_image = wx.Image(self.client_size[0], self.client_size[1])
+        buffer_image.SetRGB(
+            wx.Rect(0, 0, self.client_size[0], self.client_size[1]),
+            0,
+            0,
+            0
         )
+        self.buffer_bitmap = buffer_image.ConvertToBitmap()
+
+        # Mac Version
+        # self.buffer_bitmap = wx.Bitmap.FromRGBA(
+        #     self.client_size[0], 
+        #     self.client_size[1]
+        # )
 
         self.display_grid = [
             [
@@ -50,7 +61,9 @@ class Display():
 
         self.frame.Create(None, title=title)
         self.frame.SetClientSize(self.client_size)
-        self.frame.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+
+        # Mac Version
+        # self.frame.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
         self.frame.Centre()
 
@@ -140,8 +153,8 @@ class Display():
 
     def paint(self, e):
 
-        paint_dc = wx.AutoBufferedPaintDC(self.frame)
-        dc = wx.MemoryDC(self.buffer_bitmap)
+        dc = wx.MemoryDC()
+        dc.SelectObject(self.buffer_bitmap)
 
         for i in range(len(self.updates)):
             glyph = self.get_glyph(
@@ -156,16 +169,16 @@ class Display():
                 self.updates[i]['y'] * self.font_height
             )
 
+        dc.SelectObject(wx.NullBitmap)
+
         self.updates.clear()
-        paint_dc.Blit(
-            0,
-            0,
-            self.client_size[0],
-            self.client_size[1],
-            dc,
-            0,
-            0
-        )
+
+        # Mac Version
+        # paint_dc = wx.AutoBufferedPaintDC(self.frame)
+
+        # Windows Version
+        paint_dc = wx.PaintDC(self.frame)
+        paint_dc.DrawBitmap(self.buffer_bitmap, 0, 0)
 
     def process_color_string(self, text):
         
