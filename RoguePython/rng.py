@@ -1,7 +1,7 @@
 from time import time
 from math import sqrt, log
 
-class RNG:
+class RNG():
 	seed = []
 
 	n = 0
